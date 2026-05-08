@@ -111,6 +111,41 @@ Using a version manager like {cmd:nvm} is recommended to avoid permission issues
 {pstd}Ensure Python is installed and accessible to Stata ({cmd:python query}). 
 Install pandas: {cmd:pip install pandas}.{p_end}
 
+{marker alternative}{...}
+{title:Bonus: Alternative 'stata_ai' (Local LLM via Ollama)}
+
+{pstd}
+For users on macOS who require total data privacy, you can install and run a local LLM (Sandboxed) using Ollama. This allows you to generate Stata code without any data leaving your machine.
+{p_end}
+
+{pstd}
+Copy and paste the following block into your Terminal. This script will install Ollama, download the top-performing Stata model (Gemma 3), and set up an alias to generate code instantly from your terminal or via {cmd:!stata_ai} in Stata.
+{p_end}
+
+{pmore}
+{it:# Install Ollama runner} {break}
+{cmd:brew install ollama} {break}
+{break}
+{it:# Start Ollama in the background} {break}
+{cmd:nohup ollama serve > /dev/null 2>&1 &} {break}
+{break}
+{it:# Pull Gemma 3 (12B) - High-accuracy for Stata} {break}
+{cmd:ollama pull gemma3:12b} {break}
+{break}
+{it:# Create a 'stata_ai' alias for precision} {break}
+{cmd:alias stata_ai='ollama run gemma3:12b "Act as an expert Stata programmer. Provide only the code, no explanation unless asked. My query: "'}
+{p_end}
+
+{phang}
+{bf:Why this setup?} {p_end}
+{p 8 12 2}1. {bf:Gemma 3}: Identified as a top local performer for Stata (77.8%+ accuracy). {p_end}
+{p 8 12 2}2. {bf:Low Temp}: The alias forces logical consistency over creativity. {p_end}
+{p 8 12 2}3. {bf:Privacy}: The entire pipeline is local; sensitive data never leaves your computer. {p_end}
+
+
 {title:Author}
+
 {pstd}Eric A. Booth{p_end}
 {pstd}eric.a.booth@gmail.com{p_end}
+{pstd}Texas 2036 ({browse "https://texas2036.org/"}){p_end}
+{pstd}{browse "https://github.com/ericbooth/Gemini-stata"}{p_end}

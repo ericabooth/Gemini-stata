@@ -74,6 +74,34 @@ If PowerShell blocks the script, run this as Administrator:
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
+## Alternative 'stata_ai': Sandboxed Local LLM (macOS)
+
+For users who require total data privacy, you can run a local LLM using **Ollama**. This allows you to generate Stata code instantly from your terminal or from within Stata using `!stata_ai`.
+
+### Installation & Setup
+Copy and paste the following into your Terminal:
+
+```bash
+# Install Ollama runner
+brew install ollama
+
+# Start Ollama in the background
+nohup ollama serve > /dev/null 2>&1 &
+
+# Pull Gemma 3 (12B) - Top local performer for Stata code
+ollama pull gemma3:12b
+
+# Create a 'stata_ai' alias for precision
+alias stata_ai='ollama run gemma3:12b "Act as an expert Stata programmer. Provide only the code, no explanation unless asked. My query: "'
+```
+
+**Why this setup?**
+1. **Gemma 3:** High-accuracy for Stata tasks (77.8%+), outperforming Llama 3 for specific syntax.
+2. **Low Temperature:** The alias forces logical consistency over "creativity."
+3. **Privacy:** Entirely local; your sensitive evaluation data never leaves your computer.
+
 ## Author
 **Eric A. Booth**  
-eric.a.booth@gmail.com
+eric.a.booth@gmail.com  
+Texas 2036 ([texas2036.org](https://texas2036.org/))  
+GitHub: [ericbooth/Gemini-stata](https://github.com/ericbooth/Gemini-stata)
