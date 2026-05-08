@@ -94,6 +94,7 @@ ollama pull gemma3:12b
 # Create a 'stata_ai' alias for precision
 alias stata_ai='ollama run gemma3:12b "Act as an expert Stata programmer. Provide only the code, no explanation unless asked. My query: "'
 ```
+run from terminal or Stata shell out using command ```stata_ai "query here"```
 
 **Why this setup?**
 1. **Gemma 3:** High-accuracy for Stata tasks (77.8%+), outperforming Llama 3 for specific syntax.
