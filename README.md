@@ -1,6 +1,6 @@
 # gemini-stata
 
-Use Google's Gemini AI directly from the Stata command line to support research, coding, and data tasks.
+Use Google's Gemini AI directly from the Stata command line to support research, coding, and data tasks via Gemini CLI (requires user to have a Google Account with Gemini activated (paid or not, Pro account not required)
 
 ## Overview
 
