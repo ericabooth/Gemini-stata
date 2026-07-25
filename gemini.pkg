@@ -1,0 +1,19 @@
+v 3
+d gemini: use Google's Gemini AI from the Stata command line via the Gemini CLI
+d
+d gemini wraps the official Google Gemini CLI so that a prompt can be sent, and
+d its answer read back, without leaving Stata.  Use it to run live web searches
+d for data and facts, generate synthetic datasets for testing, get help with
+d Stata syntax and coding logic, and pull structured output (csv or json)
+d straight into memory with the clear option.
+d
+d Requires: Stata 16.0 or newer, Node.js, and the Gemini CLI
+d (npm install -g @google/gemini-cli) authenticated against a Google account.
+d
+d Author: Eric A. Booth, Sr Researcher, Texas 2036
+d Support: eric.a.booth@gmail.com
+d
+d Distribution-Date: 20260725
+d
+f gemini.ado
+f gemini.sthlp

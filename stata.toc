@@ -1,0 +1,4 @@
+v 3
+d gemini: use Google's Gemini AI from the Stata command line via the Gemini CLI
+d Eric A. Booth, Sr Researcher, Texas 2036, eric.a.booth@gmail.com
+p gemini

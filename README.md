@@ -30,12 +30,18 @@ Run `gemini` in your terminal and follow the login prompts to authorize your Goo
 
 ## Installation in Stata
 
-Copy `gemini.ado` and `gemini.sthlp` to your Stata PLUS directory (usually `~/Documents/Stata/ado/plus/g/` or equivalent). Or install via GitHub (if hosted):
+Install from GitHub in Stata:
 
 ```stata
 net install gemini, from("https://raw.githubusercontent.com/ericabooth/Gemini-stata/main/") replace force
+discard
+which gemini
 help gemini
 ```
+
+The repository ships `gemini.pkg` and `stata.toc`, so the command and its help
+file arrive in one call. To install by hand instead, copy `gemini.ado` and
+`gemini.sthlp` into your PLUS directory (usually `~/Documents/Stata/ado/plus/g/`).
 
 ## Usage
 
@@ -104,6 +110,6 @@ run from terminal or Stata shell out using command ```stata_ai "query here"```
 
 ## Author
 **Eric A. Booth**  
+Sr Researcher, Texas 2036 ([texas2036.org](https://texas2036.org/))  
 eric.a.booth@gmail.com  
-Texas 2036 ([texas2036.org](https://texas2036.org/))  
-GitHub: [ericbooth/Gemini-stata](https://github.com/ericabooth/Gemini-stata)
+GitHub: [ericabooth/Gemini-stata](https://github.com/ericabooth/Gemini-stata)
