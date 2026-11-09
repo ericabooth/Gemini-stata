@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.3.2  27apr2026}{...}
+{* *! version 2.3.3  09nov2026}{...}
 {vieweralsosee "" "--"}{...}
 {viewerjumpto "Syntax" "gemini##syntax"}{...}
 {viewerjumpto "Description" "gemini##description"}{...}
@@ -39,6 +39,14 @@ generate synthetic datasets, get coding assistance, and extract structured data 
 using Google's Gemini models. This command requires the {cmd:@google/gemini-cli} to be installed 
 on your system.
 
+{pstd}
+The answer is printed exactly as the CLI returns it: SMCL is not interpreted, and quotes,
+apostrophes and backticks are shown as is. Lines between {cmd:BEGIN_DATA} and {cmd:END_DATA}
+are written to {cmd:gemini_data.csv} or {cmd:gemini_data.json} instead of being printed.
+The CLI's error stream is read separately; routine CLI notices (retry messages, stack
+frames, color-support warnings) are hidden from it. When the CLI returns no answer at all,
+its whole error stream is shown so you can see why.
+
 {marker options}{...}
 {title:Options}
 
@@ -56,6 +64,13 @@ on your system.
 
 {phang}
 {opt model(string)}: Specify the model to use. Common options include {cmd:gemini-1.5-flash} (fast/cheap) and {cmd:gemini-1.5-pro} (complex tasks).
+
+{marker changes}{...}
+{title:Changes}
+
+{pstd}2.3.3 (09nov2026): answers containing quote characters (for example {cmd:`"text"'}) no
+longer stop {cmd:gemini} with r(132), and ordinary answer lines that happen to contain words
+such as "at" or "message:" are no longer dropped.
 
 {marker examples}{...}
 {title:Examples}

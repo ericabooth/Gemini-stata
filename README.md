@@ -108,6 +108,9 @@ run from terminal or Stata shell out using command ```stata_ai "query here"```
 2. **Low Temperature:** The alias forces logical consistency over "creativity."
 3. **Privacy:** Entirely local; your sensitive evaluation data never leaves your computer.
 
+## Changelog
+- **2.3.3 (2026-11-09)**: Answers are read and printed by Mata, so lines with quote characters such as `` `"text"' `` no longer stop the command with `r(132)`. The CLI's stderr is captured separately and only it is noise-filtered, so answer lines such as "Note that ..." are no longer dropped. When the CLI returns no answer, its full stderr is shown.
+
 ## Author
 **Eric A. Booth**  
 Sr Researcher, Texas 2036 ([texas2036.org](https://texas2036.org/))  

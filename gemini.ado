@@ -1,9 +1,19 @@
-*! version 2.3.2  27apr2026
+*! version 2.3.3  09nov2026
+*! Eric A. Booth
+*
+* Changelog
+*   2.3.3  09nov2026  The answer is read and printed by Mata, so lines with
+*                     quotes and apostrophes (for example `"text"') no longer
+*                     stop gemini with r(132). The CLI's stderr is captured
+*                     separately and only stderr is noise-filtered, so answer
+*                     lines such as "Note that ..." are no longer dropped. If
+*                     the CLI printed no answer, its full stderr is shown.
+*   2.3.2  27apr2026  Previous release.
 program define gemini
     version 16.0
     syntax [anything(name=query)], [CSV JSON Clear PATH(string) MODEL(string)]
 
-    display as text "gemini v2.3.2"
+    display as text "gemini v2.3.3"
     local iswin = (c(os) == "Windows")
 
     if `"`query'"' == "" {
@@ -52,13 +62,14 @@ program define gemini
     display as text "Command: `gemcmd' `modelopt' --yolo -p..."
 
     * 4. Execution
-    tempfile rawout
+    tempfile rawout rawerr
     local outfile : copy local rawout
+    local errfile : copy local rawerr
     if `iswin' {
-        quietly shell `gemcmd' `modelopt' --yolo -p "`prompt'" > "`outfile'" 2>&1
+        quietly shell `gemcmd' `modelopt' --yolo -p "`prompt'" > "`outfile'" 2> "`errfile'"
     }
     else {
-        ! `env' `gemcmd' `modelopt' --yolo -p "`prompt'" > "`outfile'" 2>&1
+        ! `env' `gemcmd' `modelopt' --yolo -p "`prompt'" > "`outfile'" 2> "`errfile'"
     }
 
     * 5. Validation & Parsing
@@ -71,68 +82,14 @@ program define gemini
     local ext = cond("`csv'"!="", "csv", "json")
     local savedata "gemini_data.`ext'"
     
-    tempname fhin fhout
-    capture file open `fhin' using "`outfile'", read
-    if _rc {
-        display as error "Could not open output file."
-        exit 601
+    * The answer goes through Mata so that no response text is ever placed
+    * inside a Stata string or macro expansion (quotes, apostrophes and
+    * backticks in answers are common in Stata coding help).
+    mata: _gemini_route(st_local("outfile"), st_local("savedata"))
+    capture confirm file "`errfile'"
+    if !_rc {
+        mata: _gemini_stderr(st_local("errfile"), `shown' == 0 & `found_any' == 0)
     }
-    file open `fhout' using "`savedata'", write replace
-    
-    file read `fhin' line
-    local inside_data = 0
-    local found_any = 0
-    local backtick = char(96)
-    
-    while r(eof) == 0 {
-        * THE FIX: To avoid 'too few quotes' (r(132)) with backticks, 
-        * we move data using ': copy local' and perform logic checks 
-        * on a version where backticks are replaced with spaces.
-        local rawline : copy local line
-        local safe_line : subinstr local rawline "`backtick'" " ", all
-        
-        * Use compound double quotes with macval() on the safe_line for logic
-        local trimline = trim(`"`macval(safe_line)'"')
-        
-        if `"`macval(trimline)'"' == "BEGIN_DATA" {
-            local inside_data = 1
-            file read `fhin' line
-            continue
-        }
-        if `"`macval(trimline)'"' == "END_DATA" {
-            local inside_data = 0
-            file read `fhin' line
-            continue
-        }
-        
-        if `inside_data' {
-            * Writing backticks to file is safer via file write if we escape them
-            * but for now we write the rawline and hope for the best, 
-            * or we can swap backticks for a different character.
-            file write `fhout' `"`macval(rawline)'"' _n
-            local found_any = 1
-        }
-        else {
-            local skip = strmatch(`"`macval(safe_line)'"', "Warning:*") | ///
-                         strmatch(`"`macval(safe_line)'"', "*color support*") | ///
-                         strmatch(`"`macval(safe_line)'"', "Attempt*") | ///
-                         strmatch(`"`macval(safe_line)'"', "Retrying*") | ///
-                         strmatch(`"`macval(safe_line)'"', "*at *") | ///
-                         strmatch(`"`macval(safe_line)'"', "*cause:*") | ///
-                         strmatch(`"`macval(safe_line)'"', "*code:*") | ///
-                         strmatch(`"`macval(safe_line)'"', "*message:*") | ///
-                         strmatch(`"`macval(safe_line)'"', "*[Object]*")
-            
-            if !`skip' & `"`macval(trimline)'"' != "" {
-                * Displaying backticks can still crash if expansion fails.
-                * We use the safe_line for display to ensure it never crashes.
-                display as text `"`macval(rawline)'"'
-            }
-        }
-        file read `fhin' line
-    }
-    file close `fhin'
-    file close `fhout'
 
     * 6. Memory Import
     if `found_any' {
@@ -184,4 +141,91 @@ program define gemini
         display as text "Full output from Gemini:"
         type "`outfile'"
     }
+end
+
+* Route the CLI's stdout: lines between BEGIN_DATA and END_DATA are written to
+* savefn; every other non-blank line is printed as is (no SMCL, no filtering).
+* Sets locals found_any (data lines written) and shown (lines printed).
+mata:
+void _gemini_route(string scalar infn, string scalar savefn)
+{
+    real scalar fin, fout, inside, found, shown
+    string scalar line, t
+    string matrix eof
+
+    eof = J(0, 0, "")
+    inside = 0
+    found = 0
+    shown = 0
+    fin = _fopen(infn, "r")
+    if (fin < 0) {
+        errprintf("Could not open output file.\n")
+        exit(601)
+    }
+    if (fileexists(savefn)) unlink(savefn)
+    fout = _fopen(savefn, "w")
+    if (fout < 0) {
+        fclose(fin)
+        errprintf("Could not write %s.\n", savefn)
+        exit(603)
+    }
+    while ((line = fget(fin)) != eof) {
+        line = subinstr(line, char(13), "")
+        t = strtrim(line)
+        if (t == "BEGIN_DATA") {
+            inside = 1
+            continue
+        }
+        if (t == "END_DATA") {
+            inside = 0
+            continue
+        }
+        if (inside) {
+            fput(fout, line)
+            found = 1
+        }
+        else if (t != "" & t != "Loaded cached credentials.") {
+            display(line, 1)
+            shown++
+        }
+    }
+    fclose(fin)
+    fclose(fout)
+    st_local("found_any", strofreal(found))
+    st_local("shown", strofreal(shown))
+}
+
+// Print the CLI's stderr. Known CLI noise (retry notices, stack frames,
+// error-object fields) is dropped unless showall is nonzero, which is used
+// when the CLI printed no answer at all so the user can see why.
+void _gemini_stderr(string scalar fn, real scalar showall)
+{
+    real scalar fh, i, skip
+    string scalar line, t
+    string matrix eof
+    string rowvector pat
+
+    eof = J(0, 0, "")
+    pat = ("Warning:*", "*color support*", "Attempt*", "Retrying*",
+           "at *", "*cause:*", "*code:*", "*message:*", "*[Object]*",
+           "Loaded cached credentials.*")
+    fh = _fopen(fn, "r")
+    if (fh < 0) return
+    while ((line = fget(fh)) != eof) {
+        line = subinstr(line, char(13), "")
+        t = strtrim(line)
+        if (t == "") continue
+        skip = 0
+        if (!showall) {
+            for (i = 1; i <= cols(pat); i++) {
+                if (strmatch(t, pat[i])) {
+                    skip = 1
+                    break
+                }
+            }
+        }
+        if (!skip) display(line, 1)
+    }
+    fclose(fh)
+}
 end
