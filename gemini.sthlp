@@ -185,7 +185,7 @@ Copy and paste the following block into your Terminal. This script will install 
 {it:# Start Ollama in the background} {break}
 {cmd:nohup ollama serve > /dev/null 2>&1 &} {break}
 {break}
-{it:# Pull Gemma 3 (12B) - High-accuracy for Stata} {break}
+{it:# Pull Gemma 3 (12B)} {break}
 {cmd:ollama pull gemma3:12b} {break}
 {break}
 {it:# Create a 'stata_ai' alias for precision} {break}
@@ -194,7 +194,7 @@ Copy and paste the following block into your Terminal. This script will install 
 
 {phang}
 {bf:Why this setup?} {p_end}
-{p 8 12 2}1. {bf:Gemma 3}: Identified as a top local performer for Stata (77.8%+ accuracy). {p_end}
+{p 8 12 2}1. {bf:Gemma 3}: runs entirely on your own computer through Ollama. {p_end}
 {p 8 12 2}2. {bf:Privacy}: The entire pipeline is local; sensitive data never leaves your computer. {p_end}
 
 
