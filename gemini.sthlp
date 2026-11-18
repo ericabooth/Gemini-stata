@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 2.3.4  09nov2026}{...}
+{* *! version 2.3.5  18nov2026}{...}
 {vieweralsosee "" "--"}{...}
 {viewerjumpto "Syntax" "gemini##syntax"}{...}
 {viewerjumpto "Description" "gemini##description"}{...}
@@ -100,6 +100,11 @@ text and quoted fields with line breaks are read correctly. A plain query writes
 
 {marker changes}{...}
 {title:Changes}
+
+{pstd}2.3.5 (18nov2026): on Windows, the shell line no longer starts with a quote, so the
+output redirect is always applied; 2.3.4 could stop with "Shell failed to create output
+file" r(601). The CLI is run with {cmd:GEMINI_CLI_TRUST_WORKSPACE=true}, which newer CLIs
+need to run headless in Stata's working folder.
 
 {pstd}2.3.4 (09nov2026): the query reaches the CLI exactly as typed ({cmd:$}, {cmd:$( )} and
 backticks are no longer expanded or run by the shell); {opt path()} may contain spaces; CLI

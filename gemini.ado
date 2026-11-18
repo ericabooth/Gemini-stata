@@ -1,7 +1,15 @@
-*! version 2.3.4  09nov2026
+*! version 2.3.5  18nov2026
 *! Eric A. Booth
 *
 * Changelog
+*   2.3.5  18nov2026  Windows: 2.3.4 wrapped the shell line in an extra pair
+*                     of quotes, which could leave the > and 2> redirects
+*                     inside a quoted string, so no output file was written
+*                     and gemini stopped with "Shell failed to create output
+*                     file" r(601). The line now starts with "call" and has
+*                     no outer quotes. Both platforms set
+*                     GEMINI_CLI_TRUST_WORKSPACE=true, because newer CLIs
+*                     refuse headless runs in an untrusted folder (exit 55).
 *   2.3.4  09nov2026  The prompt reaches the CLI exactly as typed: on macOS
 *                     and Linux it is passed in single quotes, so $5, $HOME,
 *                     $( ) and backticks are no longer expanded or run by the
@@ -27,7 +35,7 @@ program define gemini
     version 16.0
     syntax [anything(name=query)], [CSV JSON Clear PATH(string) MODEL(string) NOYOLO]
 
-    display as text "gemini v2.3.4"
+    display as text "gemini v2.3.5"
     local iswin = (c(os) == "Windows")
 
     mata: st_local("isempty", strofreal(strtrim(st_local("query")) == ""))
@@ -198,19 +206,22 @@ void _gemini_cmd(real scalar iswin)
     dol   = char(36)
 
     if (iswin) {
-        cmd = _gemini_dq(gem)
+        // Start with "call" so the line never begins with a quote: cmd /c
+        // strips a leading quote and the last quote only when the line
+        // starts with one, and whether Stata adds its own outer pair is
+        // not documented. "call" also runs the npm gemini.cmd shim and
+        // passes its exit status to && and ||.
+        cmd = "set " + char(34) + "GEMINI_CLI_TRUST_WORKSPACE=true" + char(34) +
+            " && call " + _gemini_dq(gem)
         if (model != "") cmd = cmd + " -m " + _gemini_dq(model)
         if (yolo != "")  cmd = cmd + " " + yolo
         cmd = cmd + " -p " + _gemini_dq(prompt) +
             " > " + _gemini_dq(out) + " 2> " + _gemini_dq(err) +
             " && (echo 0)> " + _gemini_dq(st) + " || (echo 1)> " + _gemini_dq(st)
-        // cmd /c strips the first and last quote of a line that starts
-        // with a quote, so wrap the whole line in one more pair.
-        cmd = char(34) + cmd + char(34)
     }
     else {
         cmd = "export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:" +
-            dol + "PATH; " + _gemini_sq(gem)
+            dol + "PATH; export GEMINI_CLI_TRUST_WORKSPACE=true; " + _gemini_sq(gem)
         if (model != "") cmd = cmd + " -m " + _gemini_sq(model)
         if (yolo != "")  cmd = cmd + " " + yolo
         cmd = cmd + " -p " + _gemini_sq(prompt) +

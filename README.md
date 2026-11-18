@@ -132,6 +132,7 @@ terminal aliases, so from Stata call Ollama directly:
 2. **Privacy:** Entirely local; your sensitive evaluation data never leaves your computer.
 
 ## Changelog
+- **2.3.5 (2026-11-18)**: On Windows the shell line no longer starts with a quote, so the output redirect is always applied. 2.3.4 could stop with "Shell failed to create output file" `r(601)`. The CLI is run with `GEMINI_CLI_TRUST_WORKSPACE=true`, which newer CLIs need to run headless in Stata's working folder.
 - **2.3.4 (2026-11-09)**: The query reaches the CLI exactly as typed (`$`, `$( )` and backticks are no longer expanded or run by the shell), and `path()` may contain spaces. CLI failures exit with `r(498)`; a `csv`/`json` response without data exits with `r(459)`. Fenced or inline data blocks are read; imports use UTF-8 and `bindquote(strict)`; `json` uses Stata's Python without pandas. Plain queries no longer write `gemini_data.*`, and `json` no longer writes helper files to the working folder. New `noyolo` option.
 - **2.3.3 (2026-11-09)**: Answers are read and printed by Mata, so lines with quote characters such as `` `"text"' `` no longer stop the command with `r(132)`. The CLI's stderr is captured separately and only it is noise-filtered, so answer lines such as "Note that ..." are no longer dropped. When the CLI returns no answer, its full stderr is shown.
 
