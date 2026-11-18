@@ -172,6 +172,47 @@ Using a version manager like {cmd:nvm} is recommended to avoid permission issues
 JSON itself is invalid, the conversion error is shown and the JSON is left in
 {cmd:gemini_data.json}.{p_end}
 
+{phang}{bf:"This client is no longer supported" (free Google accounts)}{p_end}
+{pstd}Google has restricted the Gemini CLI on some account types, including free personal
+accounts, and {cmd:gemini} then stops with r(498). Google's Antigravity CLI ({cmd:agy}) can be
+used instead. Find its path with {cmd:which agy} (Mac/Linux) or {cmd:where agy} (Windows) and
+add {opt noyolo}, because {cmd:agy} does not accept {cmd:--yolo}:{p_end}
+{pmore}{cmd:gemini "test", path("/Users/me/.local/bin/agy") noyolo}{p_end}
+{pstd}Neither CLI works where Google blocks its AI services.{p_end}
+
+{phang}{bf:"Shell failed to create output file" r(601), or other errors on Windows}{p_end}
+{pstd}Run the lines below from a do-file and keep the log. Each step writes to a file and
+{cmd:type}s it back, because on Windows the output of {cmd:shell} goes to a window that
+closes at once.{p_end}
+
+{p 8 8 2}{cmd:about}{break}
+{cmd:display c(os) " / " c(osdtl)}{break}
+{cmd:display c(tmpdir)}{break}
+{cmd:which gemini}{p_end}
+
+{p 8 8 2}{cmd:* 1. Can Stata's shell write a file at all?}{break}
+{cmd:shell echo hi > "`c(tmpdir)'gem1.txt"}{break}
+{cmd:type "`c(tmpdir)'gem1.txt"}{p_end}
+
+{p 8 8 2}{cmd:* 2. The same command pattern gemini uses}{break}
+{cmd:shell set "X=1" && call "where" gemini > "`c(tmpdir)'gem2.txt" 2>&1}{break}
+{cmd:type "`c(tmpdir)'gem2.txt"}{p_end}
+
+{p 8 8 2}{cmd:* 3. Is the Gemini CLI found, and does it run?}{break}
+{cmd:shell gemini --version > "`c(tmpdir)'gem3.txt" 2>&1}{break}
+{cmd:type "`c(tmpdir)'gem3.txt"}{p_end}
+
+{p 8 8 2}{cmd:* 4. The exact command gemini sends}{break}
+{cmd:set trace on}{break}
+{cmd:set tracedepth 1}{break}
+{cmd:capture noisily gemini "hi"}{break}
+{cmd:set trace off}{p_end}
+{pstd}If step 1 fails, Stata cannot write to its temporary folder through {cmd:shell} (for
+example, a user name with non-ASCII characters, or a locked-down computer). If step 1 works
+and step 2 fails, the command pattern is the problem. Step 3 shows whether the CLI is found
+and signed in. In step 4, the trace line that starts with {cmd:= shell} is the exact command
+sent to the operating system. Please include the log when you report a problem.{p_end}
+
 {marker alternative}{...}
 {title:Bonus: Alternative 'stata_ai' (Local LLM via Ollama)}
 

@@ -103,6 +103,46 @@ If PowerShell blocks the script, run this as Administrator:
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
+### "This client is no longer supported" (free Google accounts)
+Google has restricted the Gemini CLI on some account types, including free personal accounts, and `gemini` then stops with `r(498)`. Google's Antigravity CLI (`agy`) can be used instead. Find its path with `which agy` (Mac/Linux) or `where agy` (Windows), and add `noyolo`, because `agy` does not accept `--yolo`:
+```stata
+gemini "test", path("/Users/me/.local/bin/agy") noyolo
+```
+Neither CLI works where Google blocks its AI services.
+
+### "Shell failed to create output file" r(601), or other errors on Windows
+Run these lines from a do-file and keep the log. Each step writes to a file and `type`s it back, because on Windows the output of `shell` goes to a window that closes at once.
+```stata
+about
+display c(os) " / " c(osdtl)
+display c(tmpdir)
+which gemini
+
+* 1. Can Stata's shell write a file at all?
+shell echo hi > "`c(tmpdir)'gem1.txt"
+type "`c(tmpdir)'gem1.txt"
+
+* 2. The same command pattern gemini uses
+shell set "X=1" && call "where" gemini > "`c(tmpdir)'gem2.txt" 2>&1
+type "`c(tmpdir)'gem2.txt"
+
+* 3. Is the Gemini CLI found, and does it run?
+shell gemini --version > "`c(tmpdir)'gem3.txt" 2>&1
+type "`c(tmpdir)'gem3.txt"
+
+* 4. The exact command gemini sends
+set trace on
+set tracedepth 1
+capture noisily gemini "hi"
+set trace off
+```
+- **Step 1 fails:** Stata cannot write to its temporary folder through `shell` (for example, a user name with non-ASCII characters, or a locked-down computer).
+- **Step 1 works, step 2 fails:** the command pattern is the problem.
+- **Step 3** shows whether the CLI is found and signed in.
+- **Step 4:** the trace line that starts with `= shell` is the exact command sent to the operating system.
+
+Please include the log when you report a problem.
+
 ## Alternative 'stata_ai': Sandboxed Local LLM (macOS)
 
 For users who require total data privacy, you can run a local LLM using **Ollama**. This allows you to generate Stata code from your terminal.
